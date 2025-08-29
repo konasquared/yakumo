@@ -88,30 +88,22 @@ async def health_check():
 port_manager = PortManager()
 proxy_manager = ProxyManager()
 
-class ProxyRequest(BaseModel):
-    target_ip: str
-    target_port: int
-
-class SessionRequest(BaseModel):
-    session_id: str
-
-@app.post("/open_proxy")
-async def open_proxy(request: ProxyRequest):
-
+@app.get("/open_proxy")
+async def open_proxy(target_ip: str, target_port: int):
     session_id = str(uuid.uuid4())
     ingress_port = port_manager.allocate(session_id)
-    proxy_manager.open_proxy(session_id, ingress_port, request.target_ip, request.target_port)
+    proxy_manager.open_proxy(session_id, ingress_port, target_ip, target_port)
 
     return {
         "session_id": session_id,
         "ingress_port": ingress_port,
-        "target_ip": request.target_ip,
-        "target_port": request.target_port
+        "target_ip": target_ip,
+        "target_port": target_port
     }
 
-@app.post("/close_proxy")
-async def close_proxy(request: SessionRequest):
-    proxy_manager.close_proxy(request.session_id)
-    port_manager.release(request.session_id)
+@app.get("/close_proxy")
+async def close_proxy(session_id: str):
+    proxy_manager.close_proxy(session_id)
+    port_manager.release(session_id)
 
-    return {"status": "closed", "session_id": request.session_id}
+    return {"status": "closed", "session_id": session_id}
