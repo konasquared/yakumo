@@ -155,12 +155,19 @@ class ProxyManager:
                 f"Creating chain {chain_name}"
             )
             
-            # Add DNAT rule to the chain
+            # Add UDP DNAT rule to the chain
             self._run_nft_command([
                 "nft", "add", "rule", "ip", "nat", chain_name,
                 "udp", "dport", str(ingress_port),
                 "dnat", "to", f"{target_ip}:{target_port}"
-            ], f"Adding DNAT rule for {target_ip}:{target_port}")
+            ], f"Adding UDP DNAT rule for {target_ip}:{target_port}")
+
+            # Add TCP DNAT rule to the chain
+            self._run_nft_command([
+                "nft", "add", "rule", "ip", "nat", chain_name,
+                "tcp", "dport", str(ingress_port),
+                "dnat", "to", f"{target_ip}:{target_port}"
+            ], f"Adding TCP DNAT rule for {target_ip}:{target_port}")
             
             # Jump to our chain from PREROUTING
             self._run_nft_command([
