@@ -175,12 +175,19 @@ class ProxyManager:
                 "jump", chain_name
             ], f"Adding jump rule to {chain_name}")
             
-            # Add SNAT rule for return traffic
+            # Add UDP SNAT rule for return traffic
             self._run_nft_command([
                 "nft", "add", "rule", "ip", "nat", "POSTROUTING",
                 "ip", "daddr", target_ip, "udp", "dport", str(target_port),
                 "masquerade"
-            ], f"Adding SNAT rule for return traffic")
+            ], f"Adding UDP SNAT rule for return traffic")
+
+            # Add TCP SNAT rule for return traffic
+            self._run_nft_command([
+                "nft", "add", "rule", "ip", "nat", "POSTROUTING",
+                "ip", "daddr", target_ip, "tcp", "dport", str(target_port),
+                "masquerade"
+            ], f"Adding TCP SNAT rule for return traffic")
             
             self.proxies[session_id] = (ingress_port, target_ip, target_port, chain_name)
             logger.info(f"Created proxy: {ingress_port} -> {target_ip}:{target_port} (session: {session_id})")
